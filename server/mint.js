@@ -1,13 +1,20 @@
 const p5 = require('node-p5');
 const randomColor = require('randomcolor');
+const nftstorage =  require('nft.storage');
+const fs = require('fs');
+
+const endpoint = 'https://api.nft.storage'
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVBRDViQzYzRDhmYjlFZmRFZGNjRjA4MTc3OUEyMjc5OERBQjgzYUQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNjg0OTQ1Njk4NSwibmFtZSI6IkJpZ0V5ZSJ9.sWCg20ttVkSX2FpjX4b9LSIYD0SdSOZWFyuCLrbSBp4';
 
 // name canvas with minimal chance of collision
 const canvasName = "BigEye" + Math.floor(Math.random() * 1000000);
 
+var cid;
 // traits
 var colors;
 var bgCol;
 var step;
+var rings;
 var direction;
 var albino
 
@@ -25,12 +32,15 @@ function sketch(p) {
         step = Math.random();
         if (step < .1) {
             step = 30;
+            rings = 13;
         }
         else if (step < .5) {
             step = 50;
+            rings = 9;
         }
         else {
             step = 80;
+            rings = 5;
         }
         direction = Math.random();
         albino  = Math.random();
@@ -40,7 +50,8 @@ function sketch(p) {
                 const destFileName = canvasName + '.jpg';
                 console.log(destFileName);
             });
-        }, 100);
+            //store();
+        }, 100);    //wait briefly so draw() can iterate and create the full image
     };
 
     p.draw = () => {
@@ -80,7 +91,7 @@ function sketch(p) {
                 p.fill("red");
             }
             else {
-                 p.fill("black");
+                p.fill("black");
             }
             p.circle(0, 0, dia / 2);
             p.fill("black");
@@ -90,26 +101,27 @@ function sketch(p) {
     }
 }
 
-// generate a new image and return its attributes
-exports.mintNew = () => {
-    p5.createSketch(sketch);
-
-    var rings;
-    if (step === 80) {
-        rings = 5;
-    }
-    else if (step === 50) {
-        rings = 9;
-    }
-    else {
-        rings = 13;
-    }
+const store =  async() => {
+    await new Promise(r => setTimeout(r, 200));
+    const storage = new nftstorage.NFTStorage({ endpoint, token });
+    const data = await fs.promises.readFile(canvasName + '.jpg');
+    cid = await storage.storeBlob(new nftstorage.Blob([data]));
+    //const status = await storage.status(cid);
+    console.log(cid);
 
     return {
         'backgroundColor': bgCol,
         'colors': colors,
         'rings': rings,
         'direction': direction,
-        'albino': albino
+        'albino': albino,
+        'cid': cid
     }
+}
+
+// generate a new image and return its attributes
+exports.mintNew = async() => {
+    p5.createSketch(sketch);
+
+    return await store();
 }

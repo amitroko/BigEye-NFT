@@ -6,7 +6,7 @@ app.listen(3000, () => {
     console.log("Server running on port 3000.");
 })
 
-app.get('/mint', (req, res) => {
-    let r = mint.mintNew();
+app.get('/mint', async(req, res) => {
+    let r = await mint.mintNew();
     res.send(r);
 })
