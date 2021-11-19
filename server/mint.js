@@ -1,10 +1,11 @@
+require('dotenv').config();
 const p5 = require('node-p5');
 const randomColor = require('randomcolor');
 const nftstorage =  require('nft.storage');
 const fs = require('fs');
 
-const endpoint = 'https://api.nft.storage'
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVBRDViQzYzRDhmYjlFZmRFZGNjRjA4MTc3OUEyMjc5OERBQjgzYUQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNjg0OTQ1Njk4NSwibmFtZSI6IkJpZ0V5ZSJ9.sWCg20ttVkSX2FpjX4b9LSIYD0SdSOZWFyuCLrbSBp4';
+const endpoint = process.env.ENDPOINT;
+const token = process.env.TOKEN;
 
 // name canvas with minimal chance of collision
 const canvasName = "BigEye" + Math.floor(Math.random() * 1000000);
