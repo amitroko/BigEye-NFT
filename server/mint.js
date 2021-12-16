@@ -1,51 +1,49 @@
 require('dotenv').config();
 const p5 = require('node-p5');
 const randomColor = require('randomcolor');
-const nftstorage =  require('nft.storage');
 const fs = require('fs');
+const { NFTStorage, File } = require('nft.storage');
 
-const endpoint = process.env.ENDPOINT;
 const token = process.env.TOKEN;
 
 // name canvas with minimal chance of collision
 const canvasName = "BigEye" + Math.floor(Math.random() * 1000000);
 
-var cid;
 // traits
-var colors;
-var bgCol;
-var step;
-var rings;
-var direction;
-var albino
+var _colors;
+var _bgCol;
+var _step;
+var _rings;
+var _direction;
+var _albino
 
 // create image
 function sketch(p) {
     p.setup = () => {
         const canvas = p.createCanvas(540, 540);
-        colors = randomColor({
+        _colors = randomColor({
             seed: Math.floor(Math.random() * 100000),
             count: 5
         });
-        bgCol = colors[0];
-        colors.shift();
-        p.background(bgCol);
-        step = Math.random();
-        if (step < .1) {
-            step = 30;
-            rings = 13;
+        _bgCol = _colors[0];
+        _colors.shift();
+        p.background(_bgCol);
+        _step = Math.random();
+        if (_step < .1) {
+            _step = 30;
+            _rings = 13;
         }
-        else if (step < .5) {
-            step = 50;
-            rings = 9;
+        else if (_step < .5) {
+            _step = 50;
+            _rings = 9;
         }
         else {
-            step = 80;
-            rings = 5;
+            _step = 80;
+            _rings = 5;
         }
-        direction = Math.random();
-        albino  = Math.random();
-        albino = albino < .1 ? true : false;
+        _direction = Math.random();
+        _albino  = Math.random();
+        _albino = _albino < .1 ? true : false;
         setTimeout(() => {
             p.saveCanvas(canvas, canvasName, 'jpg').then((filePath) => {
                 const destFileName = canvasName + '.jpg';
@@ -60,35 +58,35 @@ function sketch(p) {
     };
 
     const InCircle = (x, y, dia, count) => {
-        const col = colors[count % colors.length];	
+        const col = _colors[count % _colors.length];	
         p.noStroke();
         p.fill(col);
         p.push();
         if (count === 1) {
             p.translate(x, y);
         }
-        else if (direction > .5) {
-            p.translate(x + (step / 5), y);
+        else if (_direction > .5) {
+            p.translate(x + (_step / 5), y);
         }
         else {
-            p.translate(x - (step / 5), y);
+            p.translate(x - (_step / 5), y);
         }
 
         p.circle(0, 0, dia);
-        if(dia > step * 2)
+        if(dia > _step * 2)
         {
-            if (direction > .5) {
-                InCircle(- step * .5, 0, dia - step, count + 1);
+            if (_direction > .5) {
+                InCircle(- _step * .5, 0, dia - _step, count + 1);
             }
             else {
-                InCircle( step * .5, 0, dia - step, count + 1);
+                InCircle( _step * .5, 0, dia - _step, count + 1);
             }
         }
         else {
             p.fill("#ffffff");
             p.ellipse(0, 0, dia, dia / 1.8);
 
-            if (albino) {
+            if (_albino) {
                 p.fill("red");
             }
             else {
@@ -104,20 +102,28 @@ function sketch(p) {
 
 const store =  async() => {
     await new Promise(r => setTimeout(r, 200));
-    const storage = new nftstorage.NFTStorage({ endpoint, token });
+    const nfts = new NFTStorage({ token });
     const data = await fs.promises.readFile(canvasName + '.jpg');
-    cid = await storage.storeBlob(new nftstorage.Blob([data]));
-    //const status = await storage.status(cid);
-    console.log(cid);
-
-    return {
-        'backgroundColor': bgCol,
-        'colors': colors,
-        'rings': rings,
-        'direction': direction,
-        'albino': albino,
-        'cid': cid
-    }
+    const metadata = await nfts.store({
+        name: 'Test',
+        description: 'Randomly generated using p5.js',
+        backgroundColor: _bgCol,
+        colors: _colors,
+        rings: _rings,
+        direction: _direction > .5 ? "left" : "right",
+        albino: _albino,
+        image: new File(
+            [data],
+            canvasName + '.jpg',
+            { type: 'image/jpg' }
+        )
+    });
+    fs.unlink('./' + canvasName + '.jpg', err => {
+        if (err) {
+            console.error("Error occurred while trying to remove file");
+        }
+    });
+    return metadata.url;
 }
 
 // generate a new image and return its attributes
