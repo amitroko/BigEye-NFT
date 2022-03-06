@@ -20,7 +20,7 @@ var _albino
 // create image
 function sketch(p) {
     p.setup = () => {
-        const canvas = p.createCanvas(540, 540);
+        const canvas = p.createCanvas(350, 350);
         _colors = randomColor({
             seed: Math.floor(Math.random() * 100000),
             count: 5
@@ -54,7 +54,7 @@ function sketch(p) {
     };
 
     p.draw = () => {
-        InCircle(540 / 2, 540 / 2, 540 - 24, 1);
+        InCircle(350 / 2, 350 / 2, 350 - 24, 1);
     };
 
     const InCircle = (x, y, dia, count) => {
@@ -107,11 +107,40 @@ const store =  async() => {
     const metadata = await nfts.store({
         name: 'Test',
         description: 'Randomly generated using p5.js',
-        backgroundColor: _bgCol,
-        colors: _colors,
-        rings: _rings,
-        direction: _direction > .5 ? "left" : "right",
-        albino: _albino,
+        attributes: [
+            {
+                "trait_type": "Background Color",
+                "value": _bgCol
+            },
+            {
+                "trait_type": "Color One",
+                "value": _colors[0]
+            },
+            {
+                "trait_type": "Color Two",
+                "value": _colors[1]
+            },
+            {
+                "trait_type": "Color Three",
+                "value": _colors[2]
+            },
+            {
+                "trait_type": "Color Four",
+                "value": _colors[3]
+            },
+            {
+                "trait_type": "Rings",
+                "value": _rings
+            },
+            {
+                "trait_type": "Direction",
+                "value": _direction > .5 ? "left" : "right"
+            },
+            {
+                "trait_type": "Albino",
+                "value": _albino
+            }
+        ],
         image: new File(
             [data],
             canvasName + '.jpg',
@@ -120,7 +149,7 @@ const store =  async() => {
     });
     fs.unlink('./' + canvasName + '.jpg', err => {
         if (err) {
-            console.error("Error occurred while trying to remove file");
+            console.error("Error occurred while trying to remove file from local storage");
         }
     });
     return metadata.url;
