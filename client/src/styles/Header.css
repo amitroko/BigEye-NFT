@@ -4,4 +4,16 @@
     background-color: gray;
     top: 0;
     position: fixed;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+h1 {
+    margin-left: 16px;
+}
+
+.address {
+    text-align: center;
+    margin-right: 16px;
 }
