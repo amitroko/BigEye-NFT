@@ -1,5 +1,6 @@
 # BigEye-NFT
-Generative NFT series using p5.js
+Generative NFT series using p5.js.
+Artwork is generated at mint time.
 
 Each BigEye has four traits:
 1. Colors
